@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { RoleSelectionDialog } from "@/components/RoleSelectionDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,15 @@ import {
 export default function Home() {
   const { user, isLoading } = useAuth();
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+
+  // Fetch dashboard statistics
+  const { data: dashboardData, isLoading: statsLoading } = useQuery<{
+    role: string;
+    stats: any;
+  }>({
+    queryKey: ["/api/dashboard/stats"],
+    enabled: !!user && !isLoading,
+  });
 
   // Show role selection dialog for first-time users
   // Uses localStorage to track if user has completed role selection
@@ -61,30 +71,30 @@ export default function Home() {
     }
   };
 
-  const getRoleDashboard = (role: string) => {
+  const getRoleDashboard = (role: string, stats: any) => {
+    if (!stats) return [];
+    
     switch (role) {
       case "admin":
         return [
-          { icon: Users, title: "Total Users", value: "10,234", change: "+12%" },
-          { icon: BookOpen, title: "Active Courses", value: "523", change: "+5%" },
-          { icon: TrendingUp, title: "Platform Growth", value: "18%", change: "+3%" },
+          { icon: Users, title: "Total Users", value: String(stats.userCount || 0), change: "" },
+          { icon: BookOpen, title: "Active Courses", value: String(stats.courseCount || 0), change: "" },
+          { icon: TrendingUp, title: "Total Enrollments", value: String(stats.enrollmentCount || 0), change: "" },
         ];
       case "instructor":
         return [
-          { icon: BookOpen, title: "My Courses", value: "12", change: "+2" },
-          { icon: Users, title: "Total Students", value: "1,847", change: "+142" },
-          { icon: Award, title: "Avg. Rating", value: "4.8", change: "+0.2" },
+          { icon: BookOpen, title: "My Courses", value: String(stats.courseCount || 0), change: "" },
+          { icon: Users, title: "Total Students", value: String(stats.studentCount || 0), change: "" },
         ];
       default:
         return [
-          { icon: BookOpen, title: "Enrolled Courses", value: "5", change: "" },
-          { icon: TrendingUp, title: "Courses Completed", value: "2", change: "+1" },
-          { icon: Clock, title: "Learning Hours", value: "48", change: "+12" },
+          { icon: BookOpen, title: "Enrolled Courses", value: String(stats.enrolledCount || 0), change: "" },
+          { icon: TrendingUp, title: "Courses Completed", value: String(stats.completedCount || 0), change: "" },
         ];
     }
   };
 
-  if (isLoading) {
+  if (isLoading || statsLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -101,7 +111,7 @@ export default function Home() {
     );
   }
 
-  const dashboardCards = getRoleDashboard(user?.role || "student");
+  const dashboardCards = getRoleDashboard(user?.role || "student", dashboardData?.stats);
 
   return (
     <div className="min-h-screen bg-background">

@@ -4,12 +4,14 @@
 SkillForge is a comprehensive Learning Management System (LMS) with AI-powered features, designed to facilitate online education for students, instructors, and administrators.
 
 ## Current State
-MVP authentication system is complete and functional, featuring:
+Authentication and core LMS infrastructure complete:
 - Replit Auth integration with OAuth support (Google, GitHub, X, Apple, email/password)
 - Role-based access control (Student, Instructor, Admin)
 - Landing page for unauthenticated users
-- Role-based home dashboards for authenticated users
+- Role-based home dashboards with REAL database statistics for authenticated users
 - Mandatory role selection for first-time users
+- Database schema for courses, lessons, enrollments, and progress tracking
+- API endpoints for course/enrollment management with Zod validation
 
 ## Tech Stack
 - **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui, Wouter (routing)
@@ -22,19 +24,26 @@ MVP authentication system is complete and functional, featuring:
 ## Project Structure
 
 ### Database Schema (`shared/schema.ts`)
-- **users**: id (serial), replitId (unique), email, firstName, lastName, profileImageUrl, role (student/instructor/admin), createdAt
+- **sessions**: sid (PK), sess (jsonb), expire (timestamp) - Session storage
+- **users**: id (varchar/UUID), email (unique), firstName, lastName, profileImageUrl, role (student/instructor/admin), createdAt, updatedAt
+- **courses**: id (varchar/UUID), instructorId (FK), title, description, category, level, imageUrl, isPublished, createdAt, updatedAt
+- **lessons**: id (varchar/UUID), courseId (FK), title, content, orderIndex, duration, createdAt, updatedAt
+- **enrollments**: id (varchar/UUID), userId (FK), courseId (FK), progress, completedAt, enrolledAt
+- **lessonProgress**: id (varchar/UUID), enrollmentId (FK), lessonId (FK), isCompleted, completedAt
 
 ### Backend (`server/`)
 - `index.ts`: Express server entry point
 - `replitAuth.ts`: Replit Auth configuration and middleware
-- `routes.ts`: API routes for user management
-- `storage.ts`: Storage interface (currently using in-memory)
+- `routes.ts`: API routes for users, courses, enrollments, and dashboard stats (with Zod validation)
+- `storage.ts`: Database storage implementation with CRUD operations
+- `db.ts`: Drizzle ORM database connection
 
 ### Frontend (`client/src/`)
 - `pages/landing.tsx`: Landing page for unauthenticated users
-- `pages/home.tsx`: Role-based dashboard for authenticated users
+- `pages/home.tsx`: Role-based dashboard displaying REAL database statistics
 - `components/Navigation.tsx`: Navigation bar with auth state
 - `components/RoleSelectionDialog.tsx`: Mandatory role selection for new users
+- `lib/queryClient.ts`: TanStack Query configuration with default fetcher
 
 ## Authentication Flow
 1. Unauthenticated users land on landing page
@@ -71,4 +80,11 @@ None documented yet.
 - Extended user schema with role-based access control
 - Created landing page and role-based home dashboards
 - Built mandatory role selection dialog with localStorage tracking
-- Fixed role selection flow to ensure all users (including those keeping default "student" role) can complete onboarding
+- Fixed role selection flow to ensure all users can complete onboarding
+- **Added complete database schema** for courses, lessons, enrollments, and progress
+- **Replaced all mock dashboard data with real database queries**:
+  - Admin: Shows actual user count, course count, enrollment count
+  - Instructor: Shows actual course count and unique student count
+  - Student: Shows actual enrolled courses and completed courses
+- Implemented API endpoints with Zod validation for courses and enrollments
+- Added duplicate enrollment prevention (409 Conflict)
