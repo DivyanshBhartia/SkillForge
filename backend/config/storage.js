@@ -1,5 +1,5 @@
-import User from './models/User.js';
-import Course from './models/Course.js';
+import User from '../models/User.js';
+import Course from '../models/Course.js';
 
 export class MongoStorage {
   async getUser(id) {

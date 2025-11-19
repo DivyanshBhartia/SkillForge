@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { storage } from './storage.js';
-import { hashPassword, comparePassword, generateToken, authenticateToken } from './auth.js';
+import { storage } from '../config/storage.js';
+import { hashPassword, comparePassword, generateToken, authenticateToken } from '../middleware/auth.js';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email format'),

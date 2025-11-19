@@ -11,10 +11,10 @@ function log(message, source = "express") {
   });
   console.log(`${formattedTime} [${source}] ${message}`);
 }
-import { registerAuthRoutes } from "./auth-routes.js";
-import { storage } from "./storage.js";
-import { connectDB } from "./db.js";
-import { authenticateToken } from "./auth.js";
+import { registerAuthRoutes } from "./routes/auth-routes.js";
+import { storage } from "./config/storage.js";
+import { connectDB } from "./config/db.js";
+import { authenticateToken } from "./middleware/auth.js";
 
 const app = express();
 
@@ -178,7 +178,7 @@ app.use((err, _req, res, _next) => {
   await connectDB();
   const httpServer = createServer(app);
   
-  const port = parseInt(process.env.PORT || '4000', 10);
+  const port = parseInt(process.env.PORT || '10000', 10);
   httpServer.listen(port, "0.0.0.0", () => {
     log(`🚀 SkillForge backend running on port ${port}`);
     log(`📚 API available at http://localhost:${port}`);
