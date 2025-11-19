@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error("MONGODB_URI must be set. Did you forget to add your MongoDB Atlas connection string?");
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL must be set. Did you forget to add your MongoDB Atlas connection string?");
 }
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.DATABASE_URL);
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
