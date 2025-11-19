@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { type User } from "@shared/schema";
 
-const fetchUser = async (): Promise<User | null> => {
+const fetchUser = async () => {
   const token = localStorage.getItem('authToken');
   
   if (!token) {
@@ -28,7 +27,7 @@ const fetchUser = async (): Promise<User | null> => {
 };
 
 export function useAuth() {
-  const { data: user, isLoading } = useQuery<User | null>({
+  const { data: user, isLoading } = useQuery({
     queryKey: ["/api/auth/me"],
     queryFn: fetchUser,
     retry: false,

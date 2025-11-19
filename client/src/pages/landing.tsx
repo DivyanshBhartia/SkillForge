@@ -18,7 +18,7 @@ import {
 
 export default function Landing() {
   const handleGetStarted = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/auth";
   };
 
   return (
@@ -50,7 +50,7 @@ export default function Landing() {
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="text-base" data-testid="button-explore">
+                <Button size="lg" variant="outline" className="text-base" data-testid="button-explore" onClick={() => window.location.href = "/courses"}>
                   Explore Courses
                 </Button>
               </div>
