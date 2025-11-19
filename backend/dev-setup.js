@@ -1,6 +1,16 @@
 import express from "express";
 import { createServer } from "http";
-import { setupVite, serveStatic, log } from "./vite.js";
+import cors from "cors";
+// import { setupVite, serveStatic, log } from "./vite.js";
+function log(message, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
 import { registerAuthRoutes } from "./auth-routes.js";
 import { storage } from "./storage.js";
 import { connectDB } from "./db.js";
@@ -51,6 +61,7 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ extended: false }));
+app.use(cors());
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -167,16 +178,9 @@ app.use((err, _req, res, _next) => {
   await connectDB();
   const httpServer = createServer(app);
   
-  // Setup Vite in development
-  if (app.get("env") === "development") {
-    await setupVite(app, httpServer);
-  } else {
-    serveStatic(app);
-  }
-  
   const port = parseInt(process.env.PORT || '4000', 10);
   httpServer.listen(port, "0.0.0.0", () => {
-    log(`🚀 SkillForge development server running on port ${port}`);
-    log(`📚 Visit http://localhost:${port} to start learning!`);
+    log(`🚀 SkillForge backend running on port ${port}`);
+    log(`📚 API available at http://localhost:${port}`);
   });
 })();

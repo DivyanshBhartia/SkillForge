@@ -1,0 +1,17 @@
+{
+  "name": "skillforge-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node dev-setup.js",
+    "start": "node dev-setup.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.0",
+    "zod": "^3.24.2",
+    "cors": "^2.8.5"
+  }
+}
