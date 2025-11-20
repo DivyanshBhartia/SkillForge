@@ -21,8 +21,44 @@ export default function Auth() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your API call here
-    console.log("Form submitted:", formData);
+    
+    try {
+      if (!isLogin && formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+      const payload = isLogin 
+        ? { email: formData.email, password: formData.password }
+        : {
+            email: formData.email,
+            password: formData.password,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            role: formData.role
+          };
+
+      const response = await fetch(`https://skillforge-1idj.onrender.com${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('authToken', data.token);
+        alert(data.message);
+        window.location.href = '/';
+      } else {
+        alert(data.message || 'Authentication failed');
+      }
+    } catch (error) {
+      alert('Network error. Please try again.');
+    }
   };
 
   return (

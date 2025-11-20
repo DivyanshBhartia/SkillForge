@@ -12,7 +12,7 @@ export default function Courses() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('https://your-backend-url.onrender.com/api/courses');
+      const response = await fetch('https://skillforge-1idj.onrender.com/api/courses');
       const data = await response.json();
       setCourses(data);
     } catch (error) {
