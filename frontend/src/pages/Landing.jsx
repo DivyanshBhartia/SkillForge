@@ -54,9 +54,11 @@ export default function Landing() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </button>
-                <button className="border border-primary text-primary px-6 py-3 rounded-lg hover:bg-primary/10 text-base">
-                  Explore Courses
-                </button>
+                <Link href="/courses">
+                  <button className="border border-primary text-primary px-6 py-3 rounded-lg hover:bg-primary/10 text-base">
+                    Explore Courses
+                  </button>
+                </Link>
               </div>
               <div className="mt-12 flex flex-wrap items-center gap-8">
                 <div className="flex items-center gap-2">
