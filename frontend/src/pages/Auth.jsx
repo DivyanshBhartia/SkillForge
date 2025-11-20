@@ -50,11 +50,13 @@ export default function Auth() {
       const data = await response.json();
 
       if (response.ok) {
+        console.log('Auth success:', data);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         alert(data.message);
         window.location.href = '/dashboard';
       } else {
+        console.error('Auth error:', data);
         alert(data.message || 'Authentication failed');
       }
     } catch (error) {
