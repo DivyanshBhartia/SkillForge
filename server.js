@@ -71,7 +71,6 @@ app.get('/', (req, res) => {
   
   const port = parseInt(process.env.PORT || '10000', 10);
   httpServer.listen(port, "0.0.0.0", () => {
-    log(`🚀 SkillForge backend running on port ${port}`);
-    log(`📚 API available at http://localhost:${port}`);
+    log(`SkillForge backend running on port ${port}`);
   });
 })();
