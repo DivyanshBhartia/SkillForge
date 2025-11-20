@@ -115,12 +115,12 @@ export default function Courses() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/auth">
+              <Link href="/auth?mode=login">
                 <button className="text-primary hover:text-primary/80">
                   Sign In
                 </button>
               </Link>
-              <Link href="/auth">
+              <Link href="/auth?mode=signup">
                 <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90">
                   Sign Up
                 </button>
