@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import Navbar from "../components/Navbar";
+import { API_BASE_URL } from "../config/api";
 
 export default function Courses() {
   const [courses, setCourses] = useState([]);
@@ -13,7 +14,7 @@ export default function Courses() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('https://skillforge-1idj.onrender.com/api/courses');
+      const response = await fetch(`${API_BASE_URL}/api/courses`);
       const data = await response.json();
       setCourses(data);
     } catch (error) {

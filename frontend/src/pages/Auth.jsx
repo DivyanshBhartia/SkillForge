@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import { API_BASE_URL } from "../config/api";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -49,7 +50,7 @@ export default function Auth() {
             role: formData.role
           };
 
-      const response = await fetch(`https://skillforge-1idj.onrender.com${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

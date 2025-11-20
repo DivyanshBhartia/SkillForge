@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import { createServer } from "http";
 import cors from "cors";
@@ -178,7 +179,7 @@ app.use((err, _req, res, _next) => {
   await connectDB();
   const httpServer = createServer(app);
   
-  const port = parseInt(process.env.PORT || '10000', 10);
+  const port = parseInt(process.env.PORT || '4000', 10);
   httpServer.listen(port, "0.0.0.0", () => {
     log(`🚀 SkillForge backend running on port ${port}`);
     log(`📚 API available at http://localhost:${port}`);
