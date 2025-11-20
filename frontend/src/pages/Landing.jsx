@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import Navbar from "../components/Navbar";
 
 export default function Landing() {
   const handleGetStarted = () => {
@@ -7,32 +8,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-              </svg>
-              <span className="text-xl font-bold font-heading">SkillForge</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/auth?mode=login">
-                <button className="text-primary hover:text-primary/80">
-                  Sign In
-                </button>
-              </Link>
-              <Link href="/auth?mode=signup">
-                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90">
-                  Sign Up
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b bg-gradient-to-b from-background to-muted/20 py-20 sm:py-24 lg:py-32">

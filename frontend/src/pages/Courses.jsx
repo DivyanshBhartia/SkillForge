@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import Navbar from "../components/Navbar";
 
 export default function Courses() {
   const [courses, setCourses] = useState([]);
@@ -77,17 +78,7 @@ export default function Courses() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <nav className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center">
-                <Link href="/">
-                  <h1 className="text-2xl font-bold text-primary cursor-pointer">SkillForge</h1>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Navbar />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -100,35 +91,7 @@ export default function Courses() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <Link href="/">
-                <h1 className="text-2xl font-bold text-primary cursor-pointer">SkillForge</h1>
-              </Link>
-              <div className="hidden md:flex space-x-6">
-                <Link href="/courses">
-                  <span className="text-primary font-medium cursor-pointer">Courses</span>
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/auth?mode=login">
-                <button className="text-primary hover:text-primary/80">
-                  Sign In
-                </button>
-              </Link>
-              <Link href="/auth?mode=signup">
-                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90">
-                  Sign Up
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}

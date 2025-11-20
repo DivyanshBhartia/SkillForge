@@ -64,7 +64,7 @@ export default function Auth() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         alert(data.message);
-        window.location.href = '/dashboard';
+        window.location.href = '/';
       } else {
         console.error('Auth error:', data);
         alert(data.message || 'Authentication failed');
