@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -50,9 +50,10 @@ export default function Auth() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
         alert(data.message);
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       } else {
         alert(data.message || 'Authentication failed');
       }
