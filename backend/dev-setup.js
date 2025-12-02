@@ -1,8 +1,8 @@
-import 'dotenv/config';
 import express from "express";
 import { createServer } from "http";
 import cors from "cors";
-// import { setupVite, serveStatic, log } from "./vite.js";
+import { z } from "zod";
+
 function log(message, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -12,49 +12,13 @@ function log(message, source = "express") {
   });
   console.log(`${formattedTime} [${source}] ${message}`);
 }
+
 import { registerAuthRoutes } from "./routes/auth-routes.js";
+import { authenticateToken, requireRole } from "./middleware/auth.js";
 import { storage } from "./config/storage.js";
 import { connectDB } from "./config/db.js";
-import { authenticateToken } from "./middleware/auth.js";
 
 const app = express();
-
-// Mock courses data
-const mockCourses = [
-  {
-    id: "1",
-    title: "Advanced React Patterns",
-    description: "Learn advanced React patterns and best practices for building scalable applications.",
-    category: "development",
-    level: "intermediate",
-    instructorId: "instructor-1",
-    isPublished: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "2", 
-    title: "Machine Learning Fundamentals",
-    description: "Introduction to machine learning concepts and practical applications.",
-    category: "data-science",
-    level: "beginner",
-    instructorId: "instructor-2",
-    isPublished: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "3",
-    title: "UX Design Principles",
-    description: "Master the fundamentals of user experience design and create intuitive interfaces.",
-    category: "design",
-    level: "beginner",
-    instructorId: "instructor-3",
-    isPublished: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
 
 app.use(express.json({
   verify: (req, _res, buf) => {
@@ -97,25 +61,95 @@ app.use((req, res, next) => {
 // Register authentication routes
 registerAuthRoutes(app);
 
-// Mock API routes for development
-app.get('/api/auth/user', (req, res) => {
-  // Mock authenticated user for backward compatibility
-  const mockUser = {
-    id: "user-123",
-    email: "demo@skillforge.com",
-    firstName: "Demo",
-    lastName: "User",
-    profileImageUrl: null,
-    role: "student",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  res.json(mockUser);
+// Real API routes backed by MongoDB
+app.get('/api/auth/user', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    const user = await storage.getUser(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { password: _, ...userWithoutPassword } = user.toObject
+      ? user.toObject()
+      : user;
+
+    res.json(userWithoutPassword);
+  } catch (error) {
+    console.error('Get /api/auth/user error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.get('/api/courses', async (req, res) => {
-  const courses = await storage.getAllPublishedCourses();
-  res.json(courses);
+// Courses list - always from MongoDB
+app.get('/api/courses', async (_req, res) => {
+  try {
+    const courses = await storage.getAllPublishedCourses();
+    res.json(courses);
+  } catch (error) {
+    console.error('Get courses error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Course details by id
+app.get('/api/courses/:id', async (req, res) => {
+  try {
+    const course = await storage.getCourseById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    res.json(course);
+  } catch (error) {
+    console.error('Get course by id error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+const courseCreateSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  category: z.string().min(1, 'Category is required'),
+  level: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
+  imageUrl: z.string().url('Invalid image URL').optional().nullable(),
+  isPublished: z.boolean().optional(),
+});
+
+// Create course - open to anyone (no auth required)
+app.post('/api/courses', async (req, res) => {
+  try {
+    const validationResult = courseCreateSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: validationResult.error.errors.map((err) => ({
+          field: err.path.join('.'),
+          message: err.message,
+        })),
+      });
+    }
+
+    const data = validationResult.data;
+
+    const course = await storage.createCourse({
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      level: data.level,
+      imageUrl: data.imageUrl ?? null,
+      isPublished: data.isPublished ?? true,
+      // No authenticated user; instructor is anonymous/unspecified
+      instructorId: null,
+    });
+
+    res.status(201).json(course);
+  } catch (error) {
+    console.error('Create course error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
@@ -175,13 +209,21 @@ app.use((err, _req, res, _next) => {
   throw err;
 });
 
-(async () => {
-  await connectDB();
-  const httpServer = createServer(app);
-  
-  const port = parseInt(process.env.PORT || '4000', 10);
-  httpServer.listen(port, "0.0.0.0", () => {
-    log(`🚀 SkillForge backend running on port ${port}`);
-    log(`📚 API available at http://localhost:${port}`);
-  });
-})();
+const httpServer = createServer(app);
+const port = 4000;
+
+async function start() {
+  try {
+    await connectDB();
+    httpServer.listen(port, "0.0.0.0", () => {
+      log(`🚀 SkillForge backend running on port ${port}`);
+      log(`📚 API available at http://localhost:${port}`);
+      log(`🗄️ Connected to MongoDB - serving real data`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+start();

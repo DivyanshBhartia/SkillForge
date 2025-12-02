@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { storage } from '../config/storage.js';
 import { hashPassword, comparePassword, generateToken, authenticateToken } from '../middleware/auth.js';
+import { storage } from '../config/storage.js';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -20,14 +20,14 @@ export function registerAuthRoutes(app) {
   app.post('/api/auth/signup', async (req, res) => {
     try {
       const validationResult = signupSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         return res.status(400).json({
           message: 'Validation failed',
-          errors: validationResult.error.errors.map(err => ({
+          errors: validationResult.error.errors.map((err) => ({
             field: err.path.join('.'),
-            message: err.message
-          }))
+            message: err.message,
+          })),
         });
       }
 
@@ -55,8 +55,10 @@ export function registerAuthRoutes(app) {
       const token = generateToken(user.id, user.email, user.role);
 
       // Return user data (without password) and token
-      const { password: _, ...userWithoutPassword } = user;
-      
+      const { password: _, ...userWithoutPassword } = user.toObject
+        ? user.toObject()
+        : user;
+
       res.status(201).json({
         message: 'User created successfully',
         user: userWithoutPassword,
@@ -72,14 +74,14 @@ export function registerAuthRoutes(app) {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const validationResult = loginSchema.safeParse(req.body);
-      
+
       if (!validationResult.success) {
         return res.status(400).json({
           message: 'Validation failed',
-          errors: validationResult.error.errors.map(err => ({
+          errors: validationResult.error.errors.map((err) => ({
             field: err.path.join('.'),
-            message: err.message
-          }))
+            message: err.message,
+          })),
         });
       }
 
@@ -101,8 +103,10 @@ export function registerAuthRoutes(app) {
       const token = generateToken(user.id, user.email, user.role);
 
       // Return user data (without password) and token
-      const { password: _, ...userWithoutPassword } = user;
-      
+      const { password: _, ...userWithoutPassword } = user.toObject
+        ? user.toObject()
+        : user;
+
       res.json({
         message: 'Login successful',
         user: userWithoutPassword,
@@ -126,7 +130,9 @@ export function registerAuthRoutes(app) {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      const { password: _, ...userWithoutPassword } = user;
+      const { password: _, ...userWithoutPassword } = user.toObject
+        ? user.toObject()
+        : user;
       res.json(userWithoutPassword);
     } catch (error) {
       console.error('Get user error:', error);

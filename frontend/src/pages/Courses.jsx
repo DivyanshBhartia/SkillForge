@@ -7,6 +7,16 @@ export default function Courses() {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    category: "",
+    level: "beginner",
+    imageUrl: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     fetchCourses();
@@ -48,6 +58,54 @@ export default function Courses() {
       ]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateCourse = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setCreating(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/courses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          category: form.category || "general",
+          level: form.level,
+          imageUrl: form.imageUrl || null,
+          isPublished: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setError(data.message || "Failed to create course");
+        return;
+      }
+
+      const created = await response.json();
+      setSuccess("Course created successfully");
+      setForm({
+        title: "",
+        description: "",
+        category: "",
+        level: "beginner",
+        imageUrl: "",
+      });
+
+      // Refresh list with latest courses
+      await fetchCourses();
+    } catch (err) {
+      console.error("Error creating course:", err);
+      setError("Unexpected error while creating course");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -104,18 +162,110 @@ export default function Courses() {
         </div>
 
         {/* Search */}
-        <div className="mb-8">
-          <div className="relative max-w-md">
-            <svg className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search courses..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-            />
+        <div className="mb-10 grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start">
+          {/* Search input */}
+          <div>
+            <div className="relative max-w-md">
+              <svg className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              />
+            </div>
+          </div>
+
+          {/* Create course form */}
+          <div className="bg-card border rounded-lg p-4 md:p-5 shadow-sm">
+            <h2 className="text-lg font-semibold mb-3">Create a new course</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Anyone can share knowledge. Fill in the details below to publish a course.
+            </p>
+
+            {error && (
+              <div className="mb-3 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-3 rounded border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700">
+                {success}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateCourse} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Title</label>
+                <input
+                  type="text"
+                  required
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                  placeholder="e.g. Modern JavaScript from Scratch"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                  placeholder="Briefly describe what students will learn in this course."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <input
+                    type="text"
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                    placeholder="e.g. development, design"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Level</label>
+                  <select
+                    value={form.level}
+                    onChange={(e) => setForm({ ...form, level: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Cover image URL (optional)</label>
+                <input
+                  type="url"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={creating}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                {creating ? "Creating..." : "Create Course"}
+              </button>
+            </form>
           </div>
         </div>
 
